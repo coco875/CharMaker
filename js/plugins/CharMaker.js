@@ -19,7 +19,71 @@ function CharMaker() {
         SceneManager.goto(CharMaker);
     });
 
-    
+    onglet = [
+        "Character",
+        "Face",
+        "Battler"
+    ]
+
+    tab = `<li id="txt" style="
+    display:inline-block;
+    float:left;
+    height:24px;
+    min-width:80px;
+    text-align:center;
+    line-height: 22px;
+    padding:0 8px 0 8px;
+    margin: 1px 0px 0px 0px;
+    border-radius: 30px;
+    background:#393c43;
+    color: white;">txt</li>`
+
+    tabpanel = `<div id="txt" class="tabpanel" style="display:none">content</div>`
+
+    half_width = 816/2
+    console.log(half_width)
+    info_tab = {
+        "Character":{
+            "id":"character",
+            "content":`
+            <div class="row" style="display: flex;">
+                <div class="column" style="width: 50%;">
+                <canvas id="characterCanvas"></canvas>
+                </div>
+                <div class="column" style="width: 50%;">
+                <div style="text-align: center; margin-top: 8px; color: white;">Sign up</div>
+                </div>
+            </div>
+            `
+        },
+        "Face":{
+            "id":"face",
+            "content":`
+            <div class="row" style="display: flex;">>
+                <div class="column" style="width: 50%;">
+                <canvas id="faceCanvas"></canvas>
+                </div>
+                <div class="column" style="width: 50%;">
+                <div style="text-align: center; margin-top: 8px; color: white;">jdw</div>
+                </div>
+            </div>
+            `
+        },
+        "Battler":{
+            "id":"battler",
+            "content":`
+            <div class="row" style="display: flex;">>
+                <div class="column" style="width: 50%;">
+                <canvas id="battlerCanvas"></canvas>
+                </div>
+                <div class="column" style="width: 50%;">
+                <div style="text-align: center; margin-top: 8px; color: white;">ufytd</div>
+                </div>
+            </div>
+            `
+        }
+    }
+
     width = 576
     height = 384
     fileGenerator = "js/plugins/generator/"
@@ -185,67 +249,73 @@ function CharMaker() {
     };
 
     CharMaker.prototype.createCharMaker = function(){
+        tab_html = ""
+        for (i=0;i<onglet.length;i+=1) {
+            tab_html += tab.replace(/txt/g,onglet[i])
+        }
+        tabpanel_html = ""
+        for (i=0;i<onglet.length;i+=1) {
+            console.log(info_tab[onglet[i]].id)
+            tabpanel_html += tabpanel.replace(/txt/g,info_tab[onglet[i]].id).replace(/content/g,info_tab[onglet[i]].content)
+        }
         let html = `
         <div id="CharMaker" 
         style="
             position: fixed;
             z-index: 999999999999999; /* yep it's a lot but eh */ 
+            margin: 0 auto;
+            left: 50vw; 
+            transform: translate(-50%, 0);
         "
         >
         <div id="tabs">
             <ul style="
             display:block;
-            float:center;
             height:32px;
-            width:${Graphics.width}px;
+            width:${Graphics._width}px;
             background:#393c43;">
-                <li id="svgimg" style="
-                display:inline-block;
-                float:left;
-                height:24px;
-                min-width:80px;
-                text-align:center;
-                line-height: 22px;
-                padding:0 8px 0 8px;
-                margin: 1px 0px 0px 0px;
-                border-radius: 30px;
-                background:#393c43;
-                color: white;">SVG Image</li>
-
-                <li id="srcode" style="
-                display:inline-block;
-                float:left;
-                height:24px;
-                min-width:80px;
-                text-align:center;
-                line-height: 22px;
-                padding:0 8px 0 8px;
-                margin: 1px 0px 0px 0px;
-                border-radius: 30px;
-                background:#393c43;
-                color: white;">Source code</li>
+                ${tab_html}
             </ul>
         </div>
         <div id="tabcontent">
-        <div id="svgpic" class="tabpanel" style="display:inline"><br>
-        <div style="text-align: center; margin-top: 8px; color: white;">Sign up</div></div>
-        <div id="source" class="tabpanel" style="display:none"><br>
-        <div style="text-align: center; margin-top: 8px; color: white;">b</div></div>
+        ${tabpanel_html}
         </div>
         </div>
         </div>
         `
         document.getElementById('text_zone').innerHTML = html;
-        document.getElementById('srcode').addEventListener('click', () => {
-            selView(2, document.getElementById('srcode'))
-        });
-        document.getElementById('svgimg').addEventListener('click', () => {
-            selView(1, document.getElementById('svgimg'))
-        });
-        selInit()
+        for (i=0;i<onglet.length;i+=1) {
+            document.getElementById(onglet[i]).addEventListener('click', callbackClosure( i, function(i) {
+                selView(i)
+            }) );
+        }
     }
 
-    function selView(n, litag) {
+    function callbackClosure(i, callback) {
+        return function() {
+          return callback(i);
+        }
+      }
+
+    function selView(n) {
+        for (i=0;i<onglet.length;i+=1) {
+            console.log(i,n)
+            if (i==n){
+                console.log("ok")
+                document.getElementById(info_tab[onglet[i]].id).style.display = "inline"
+                document.getElementById(onglet[i]).style.background = "#34373c"
+            } else {
+                document.getElementById(info_tab[onglet[i]].id).style.display = "none"
+                document.getElementById(onglet[i]).style.background = "#393c43"
+            }
+        }
+        // var tabs = document.getElementById("tabs");
+        // var ca = Array.prototype.slice.call(tabs.querySelectorAll("li"));
+        // ca.map(function(elem) {
+        //   elem.style.background="#393c43";
+        // });
+        // document.getElementById(onglet[n]).style.background = "#34373c";
+        return;
         var svgview = "none";
         var codeview = "none";
         switch(n) {
@@ -259,7 +329,7 @@ function CharMaker() {
           default:
             break;
         }
-      
+        
         document.getElementById("svgpic").style.display = svgview;
         document.getElementById("source").style.display = codeview;
         var tabs = document.getElementById("tabs");
