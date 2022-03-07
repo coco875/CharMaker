@@ -194,15 +194,10 @@ function CharMaker() {
         >
         <div id="tabs">
             <ul style="
-            display:inline-block;
-            float:left;
-            height:24px;
-            min-width:80px;
-            text-align:center;
-            line-height: 22px;
-            padding:0 8px 0 8px;
-            margin: 1px 0px 0px 0px;
-            border: 1px solid gray;	
+            display:block;
+            float:center;
+            height:32px;
+            width:${Graphics.width}px;
             background:#393c43;">
                 <li id="svgimg" style="
                 display:inline-block;
@@ -213,9 +208,9 @@ function CharMaker() {
                 line-height: 22px;
                 padding:0 8px 0 8px;
                 margin: 1px 0px 0px 0px;
-                border: 1px solid gray;
                 border-radius: 30px;
-                background:#F0F0F0;">SVG Image</li>
+                background:#393c43;
+                color: white;">SVG Image</li>
 
                 <li id="srcode" style="
                 display:inline-block;
@@ -226,9 +221,9 @@ function CharMaker() {
                 line-height: 22px;
                 padding:0 8px 0 8px;
                 margin: 1px 0px 0px 0px;
-                border: 1px solid gray;
                 border-radius: 30px;
-                background:#F0F0F0;">Source code</li>
+                background:#393c43;
+                color: white;">Source code</li>
             </ul>
         </div>
         <div id="tabcontent">
@@ -271,17 +266,13 @@ function CharMaker() {
         var ca = Array.prototype.slice.call(tabs.querySelectorAll("li"));
         ca.map(function(elem) {
           elem.style.background="#393c43";
-          elem.style.borderBottom="1px solid gray"
         });
-      
-        litag.style.borderBottom = "1px solid white";
         litag.style.background = "#34373c";
     }
     
     function selInit() {
         var tabs = document.getElementById("tabs");
         litag = tabs.querySelector("li");   // first li
-        litag.style.borderBottom = "1px solid white";
         litag.style.background = "#34373c";
     }
 })();
