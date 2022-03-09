@@ -13,9 +13,12 @@ function CharMaker() {
 (function () {
     const pluginName = "CharMaker";
     continu = true
+    width = 576
+    height = 384
+    var canvas
+    var ctx
     PluginManager.registerCommand(pluginName, "set", args => {
         //SceneManager._scene._active = false
-        //grad.grad_common.addLoadListener(grad_common_load)
         SceneManager.goto(CharMaker);
     });
 
@@ -48,7 +51,7 @@ function CharMaker() {
             "content":`
             <div class="row" style="display: flex;">
                 <div class="column" style="width: 50%;">
-                <canvas id="characterCanvas"></canvas>
+                <canvas id="characterCanvas" width=${width} height=${height}></canvas>
                 </div>
                 <div class="column" style="width: 50%;">
                 <div style="text-align: center; margin-top: 8px; color: white;">Sign up</div>
@@ -84,8 +87,6 @@ function CharMaker() {
         }
     }
 
-    width = 576
-    height = 384
     fileGenerator = "js/plugins/generator/"
     json = fs.readFileSync("test.json")
     const charProperties = JSON.parse(json)
@@ -114,7 +115,7 @@ function CharMaker() {
 
     function grad_skin_load(){
         if (step == order.length){
-            final_save()
+            //final_save()
         } else {
             var filename = type+"_"+order[step]+"_"+charProperties.patterns[order[step].toLowerCase().replace(/\d+/g, '')]
             if (order[step].toLowerCase().replace(/\d+/g, '') in charProperties.patterns && fs.existsSync(image_path+filename+".png")){
@@ -176,10 +177,6 @@ function CharMaker() {
     } else {
         gender = "Female"
     }
-    const canvas = document.createElement("canvas");
-    canvas.width = width
-    canvas.height = height
-    var ctx = canvas.getContext("2d");
 
     var image_path = fileGenerator+type+"/"+gender+"/";
 
@@ -289,6 +286,10 @@ function CharMaker() {
                 selView(i)
             }) );
         }
+        canvas = document.getElementById("characterCanvas");
+        ctx = canvas.getContext("2d");
+        grad.grad_common.addLoadListener(grad_common_load)
+        selInit()
     }
 
     function callbackClosure(i, callback) {
@@ -309,40 +310,9 @@ function CharMaker() {
                 document.getElementById(onglet[i]).style.background = "#393c43"
             }
         }
-        // var tabs = document.getElementById("tabs");
-        // var ca = Array.prototype.slice.call(tabs.querySelectorAll("li"));
-        // ca.map(function(elem) {
-        //   elem.style.background="#393c43";
-        // });
-        // document.getElementById(onglet[n]).style.background = "#34373c";
-        return;
-        var svgview = "none";
-        var codeview = "none";
-        switch(n) {
-          case 1:
-            svgview = "inline";
-            break;
-          case 2:
-            codeview = "inline";
-            break;
-            // add how many cases you need
-          default:
-            break;
-        }
-        
-        document.getElementById("svgpic").style.display = svgview;
-        document.getElementById("source").style.display = codeview;
-        var tabs = document.getElementById("tabs");
-        var ca = Array.prototype.slice.call(tabs.querySelectorAll("li"));
-        ca.map(function(elem) {
-          elem.style.background="#393c43";
-        });
-        litag.style.background = "#34373c";
     }
     
     function selInit() {
-        var tabs = document.getElementById("tabs");
-        litag = tabs.querySelector("li");   // first li
-        litag.style.background = "#34373c";
+        selView(0)
     }
 })();
