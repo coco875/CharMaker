@@ -31,6 +31,8 @@ function CharMaker() {
         SceneManager.goto(CharMaker);
     });
 
+    option = `opt<br><i class="arrow left" id="optL">&#8592</i><div id="opt">vpt</div><i class="arrow right" id="optR">&#8594</i><br>`
+
     tab = `<li id="txt" style="
     display:inline-block;
     float:left;
@@ -53,10 +55,10 @@ function CharMaker() {
             "content":`
             <div class="row" style="display: flex;">
                 <div class="column" style="width: 50%;">
-                <canvas id="characterCanvas" width=${spriteWidth*4} height=${spriteHeight*4} style="display: block; margin: 0 auto;"></canvas>
+                <canvas id="characterCanvas" width=${spriteWidth} height=${spriteHeight} style="display: block; margin: 0 auto; width: ${spriteWidth*4}px; height: ${spriteHeight*4}px; image-rendering: -moz-crisp-edges; image-rendering: -webkit-crisp-edges; image-rendering: pixelated; image-rendering: crisp-edges;"></canvas>
                 </div>
                 <div class="column" style="width: 50%;">
-                <div style="text-align: center; margin-top: 8px; color: white;">Sign up</div>
+                <div style="text-align: center; margin-top: 8px; color: white;">option</div>
                 </div>
             </div>
             `,
@@ -69,7 +71,7 @@ function CharMaker() {
                 ctx.drawImage(
                     PlayerImage.characterCanvas, 
                     animex*spriteWidth, 
-                    animey*spriteHeight+1, 
+                    animey*spriteHeight, 
                     spriteWidth, 
                     spriteHeight, 
                     0, 0, 
@@ -82,7 +84,24 @@ function CharMaker() {
                     if (animey==4) {
                         animey = 0
                     }
-            }
+            },
+            "option":[
+                "body",
+                "fronthair",
+                "reathair",
+                "beard",
+                "ears",
+                "eyes",
+                "facialmark",
+                "beastears",
+                "tail",
+                "wing",
+                "clothing",
+                "cloak",
+                "acca",
+                "accb",
+                "glasses"
+            ]
         },
         "Face":{
             "id":"face",
@@ -268,14 +287,19 @@ function CharMaker() {
 
     CharMaker.prototype.createCharMaker = function(){
         tab_html = ""
-        for (var key in info_tab) {
-            tab_html += tab.replace(/txt/g,key)
-        }
         tabpanel_html = ""
         for (var key in info_tab) {
-            console.log(info_tab[key].id)
-            tabpanel_html += tabpanel.replace(/txt/g,info_tab[key].id).replace(/content/g,info_tab[key].content)
+            tab_html += tab.replace(/txt/g,key)
+            let txt = tabpanel.replace(/txt/g,info_tab[key].id).replace(/content/g,info_tab[key].content)
+            let option_html = ""
+            for (t in info_tab[key].option){
+                let value = info_tab[key].option[t]
+                option_html += option.replace(/opt/g,value).replace("vpt",charProperties.patterns[value])
+            }
+            txt = txt.replace("option",option_html)
+            tabpanel_html += txt
         }
+        
         let html = `
         <div id="CharMaker" 
         style="
@@ -311,6 +335,14 @@ function CharMaker() {
         //ctx = canvas.getContext("2d");
         grad.grad_common.addLoadListener(grad_common_load)
         selInit()
+        for (var key in info_tab) {
+            for (t in info_tab[key].option) {
+                let value = info_tab[key].option[t]
+                document.getElementById(value+"L").addEventListener('click',function (){
+                    console.log(value)
+                })
+            }
+        }
     }
 
     function callbackClosure(i, callback) {
@@ -320,12 +352,9 @@ function CharMaker() {
       }
 
     function selView(n) {
-        console.log(n)
         i=0
         for (var key in info_tab) {
-            console.log(i,n)
             if (i==n){
-                console.log("ok")
                 document.getElementById(info_tab[key].id).style.display = "inline"
                 document.getElementById(key).style.background = "#34373c"
                 if ("draw" in info_tab[key]) {
