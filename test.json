@@ -2,14 +2,24 @@
     "gender":"male",
     "patterns":{
         "body":"p01",
-        "face":"p09",
-        "fronthair":"p10",
-        "rearhair":"p12",
-        "eyes":"p03",
-        "eyebrows":"p00",
-        "nose":"p07",
-        "mouth":"p04",
-        "clothing":"p14"
+        "face":"p01",
+        "fronthair":"p01",
+        "rearhair":"p01",
+        "beard":"p01",
+        "ears":"p01",
+        "eyes":"p01",
+        "eyebrows":"p01",
+        "nose":"p01",
+        "mouth":"p01",
+        "facialmark":"p06",
+        "beastears":"p02",
+        "tail":"p01",
+        "wing":"p01",
+        "clothing":"p01",
+        "cloak":"p01",
+        "acca":"p01",
+        "accb":"p02",
+        "glasses":"p06"
     },
     "colors":{
         "skin":7,
@@ -38,23 +48,77 @@
         "wing":0
     },
     "offsets":{
-        "face":{"x":0,"y":0},
-        "fronthair":{"x":0,"y":0},
-        "rearhair":{"x":0,"y":0},
-        "beard":{"x":0,"y":0},
-        "ears":{"x":0,"y":0},
-        "eyes":{"x":0,"y":0},
-        "eyebrows":{"x":0,"y":0},
-        "nose":{"x":0,"y":0},
-        "mouth":{"x":0,"y":0},
-        "facialmark":{"x":0,"y":0},
-        "beastears":{"x":0,"y":0},
-        "tail":{"x":0,"y":0},
-        "wing":{"x":0,"y":0},
-        "clothing":{"x":0,"y":0},
-        "cloak":{"x":0,"y":0},
-        "acca":{"x":0,"y":0},
-        "accb":{"x":0,"y":0},
-        "glasses":{"x":0,"y":0}
+        "face":{
+            "x":0,
+            "y":0
+        },
+        "fronthair":{
+            "x":0,
+            "y":0
+        },
+        "rearhair":{
+            "x":0,
+            "y":0
+        },
+        "beard":{
+            "x":0,
+            "y":0
+        },
+        "ears":{
+            "x":0,
+            "y":0
+        },
+        "eyes":{
+            "x":0,
+            "y":0
+        },
+        "eyebrows":{
+            "x":0,
+            "y":0
+        },
+        "nose":{
+            "x":0,
+            "y":0
+        },
+        "mouth":{
+            "x":0,
+            "y":0
+        },
+        "facialmark":{
+            "x":0,
+            "y":0
+        },
+        "beastears":{
+            "x":0,
+            "y":0
+        },
+        "tail":{
+            "x":0,
+            "y":0
+        },
+        "wing":{
+            "x":0,
+            "y":0
+        },
+        "clothing":{
+            "x":0,
+            "y":0
+        },
+        "cloak":{
+            "x":0,
+            "y":0
+        },
+        "acca":{
+            "x":0,
+            "y":0
+        },
+        "accb":{
+            "x":0,
+            "y":0
+        },
+        "glasses":{
+            "x":0,
+            "y":0
+        }
     }
 }
