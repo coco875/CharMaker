@@ -31,7 +31,7 @@ function CharMaker() {
         SceneManager.goto(CharMaker);
     });
 
-    option = `opt<br><i class="arrow left" id="optL">&#8592</i><div id="opt">vpt</div><i class="arrow right" id="optR">&#8594</i><br>`
+    option = `opt<br><i class="arrow left" id="optL">&#8592</i><div id="opt" style="display:inline;">vpt</div><i class="arrow right" id="optR">&#8594</i><br>`
 
     tab = `<li id="txt" style="
     display:inline-block;
@@ -56,6 +56,7 @@ function CharMaker() {
             <div class="row" style="display: flex;">
                 <div class="column" style="width: 50%;">
                 <canvas id="characterCanvas" width=${spriteWidth} height=${spriteHeight} style="display: block; margin: 0 auto; width: ${spriteWidth*4}px; height: ${spriteHeight*4}px; image-rendering: -moz-crisp-edges; image-rendering: -webkit-crisp-edges; image-rendering: pixelated; image-rendering: crisp-edges;"></canvas>
+                <button onclick="CharMaker.actualise()" style="display: block; margin: 0 auto;">Refresh</button>
                 </div>
                 <div class="column" style="width: 50%;">
                 <div style="text-align: center; margin-top: 8px; color: white;">option</div>
@@ -65,9 +66,7 @@ function CharMaker() {
             "draw":function () {
                 let canvas = document.getElementById("characterCanvas")
                 let ctx = canvas.getContext("2d")
-                ctx.rect(0,0,canvas.width,canvas.height)
-                ctx.fillStyle = "black"
-                ctx.fill()
+                ctx.clearRect(0,0,canvas.width,canvas.height)
                 ctx.drawImage(
                     PlayerImage.characterCanvas, 
                     animex*spriteWidth, 
@@ -88,7 +87,7 @@ function CharMaker() {
             "option":[
                 "body",
                 "fronthair",
-                "reathair",
+                "rearhair",
                 "beard",
                 "ears",
                 "eyes",
@@ -145,6 +144,8 @@ function CharMaker() {
     grad.grad_skin = ImageManager.loadBitmap(fileGenerator, "grad_skin")
 
     function grad_common_load(){
+        step = 0
+        PlayerImage.characterCanvas.getContext('2d').clearRect(0,0,PlayerImage.characterCanvas.width,PlayerImage.characterCanvas.height)
         grad.grad_eyes.addLoadListener(grad_eyes_load)
     }
 
@@ -160,6 +161,7 @@ function CharMaker() {
         if (step == order.length){
             //final_save()
         } else {
+            console.log(step, order[step], order)
             var filename = type+"_"+order[step]+"_"+charProperties.patterns[order[step].toLowerCase().replace(/\d+/g, '')]
             if (order[step].toLowerCase().replace(/\d+/g, '') in charProperties.patterns && fs.existsSync(image_path+filename+".png")){
                 var image = ImageManager.loadBitmap(image_path, filename);
@@ -312,7 +314,7 @@ function CharMaker() {
         >
         <div id="tabs">
             <ul style="
-            display:block;
+            display:inline-block;
             height:32px;
             width:${Graphics._width}px;
             background:#393c43;">
@@ -339,10 +341,27 @@ function CharMaker() {
             for (t in info_tab[key].option) {
                 let value = info_tab[key].option[t]
                 document.getElementById(value+"L").addEventListener('click',function (){
-                    console.log(value)
+                    n = Number(charProperties.patterns[value].slice(-2))
+                    console.log(n,charProperties.patterns[value])
+                    n = Math.max(n-1,0)
+                    charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
+                    console.log(n,charProperties.patterns[value])
+                    document.getElementById(value).innerHTML = charProperties.patterns[value]
+                })
+                document.getElementById(value+"R").addEventListener('click',function (){
+                    n = Number(charProperties.patterns[value].slice(-2))
+                    console.log(n,charProperties.patterns[value])
+                    n = Math.min(n+1,15)
+                    charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
+                    console.log(n,charProperties.patterns[value])
+                    document.getElementById(value).innerHTML = charProperties.patterns[value]
                 })
             }
         }
+    }
+
+    CharMaker.actualise = function(){
+        grad.grad_common.addLoadListener(grad_common_load)
     }
 
     function callbackClosure(i, callback) {
