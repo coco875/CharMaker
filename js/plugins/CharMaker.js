@@ -161,18 +161,21 @@ function CharMaker() {
         if (step == order.length){
             //final_save()
         } else {
-            console.log(step, order[step], order)
             var filename = type+"_"+order[step]+"_"+charProperties.patterns[order[step].toLowerCase().replace(/\d+/g, '')]
             if (order[step].toLowerCase().replace(/\d+/g, '') in charProperties.patterns && fs.existsSync(image_path+filename+".png")){
                 var image = ImageManager.loadBitmap(image_path, filename);
                 var mask = ImageManager.loadBitmap(image_path, filename+"_c");
-
                 image.addLoadListener(function () {
                     mask.addLoadListener(function () {
-                        applyMask_grad(image,mask)
-                        PlayerImage.characterCanvas.getContext('2d').drawImage(image.canvas,0,0)
-                        step+=1
-                        grad_skin_load()
+                        clone = ImageManager.loadBitmap("",order[step].toLowerCase().replace(/\d+/g, ''))
+                        clone.resize(image.width,image.height)
+                        clone.addLoadListener(function (){ 
+                            console.log("ooks")
+                            applyMask_grad(clone,image,mask)
+                            PlayerImage.characterCanvas.getContext('2d').drawImage(clone.canvas,0,0)
+                            step+=1
+                            grad_skin_load()
+                        })
                     })
                 })
             } else {
@@ -239,8 +242,9 @@ function CharMaker() {
         return moy
     }
 
-    function applyMask_grad(image,mask) {
-        convertColor = {}
+    function applyMask_grad(clone,image,mask) {
+        let convertColor = {}
+        
         for (x=0;x<mask.width;x+=1) {
             for (y=0;y<mask.height;y+=1){
                 if (mask.getPixel(x,y) in maskColor){
@@ -251,12 +255,15 @@ function CharMaker() {
                     } else {
                         gradActual = grad[gradByType[maskColor[mask.getPixel(x,y)]]]
                         t = niv_gris(colorOriginal)
-                        t= t*1.1
+                        //t= t*1.1
                         t = t/255
 
-                        newColor = gradActual.getPixel(gradActual.width-(t*(gradActual.width*1.2)), (charProperties.colors[maskColor[mask.getPixel(x,y)]])*4)
+                        newColor = gradActual.getPixel(gradActual.width-(t*(gradActual.width)), (charProperties.colors[maskColor[mask.getPixel(x,y)]])*4)
                     }
-                    image.fillRect(x,y,1,1,newColor)
+                    if (clone.getPixel(x,y)==newColor) {
+                        //return clone
+                    }
+                    clone.fillRect(x,y,1,1,newColor)
                 }
             }
         }
@@ -342,18 +349,14 @@ function CharMaker() {
                 let value = info_tab[key].option[t]
                 document.getElementById(value+"L").addEventListener('click',function (){
                     n = Number(charProperties.patterns[value].slice(-2))
-                    console.log(n,charProperties.patterns[value])
                     n = Math.max(n-1,0)
                     charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
-                    console.log(n,charProperties.patterns[value])
                     document.getElementById(value).innerHTML = charProperties.patterns[value]
                 })
                 document.getElementById(value+"R").addEventListener('click',function (){
                     n = Number(charProperties.patterns[value].slice(-2))
-                    console.log(n,charProperties.patterns[value])
                     n = Math.min(n+1,15)
                     charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
-                    console.log(n,charProperties.patterns[value])
                     document.getElementById(value).innerHTML = charProperties.patterns[value]
                 })
             }
