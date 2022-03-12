@@ -16,6 +16,7 @@ function CharMaker() {
     width = 576
     height = 384
     PlayerImage = {}
+    imageChar = {}
     PlayerImage.characterCanvas = document.createElement('canvas')
     PlayerImage.characterCanvas.width = width
     PlayerImage.characterCanvas.height = height
@@ -167,12 +168,13 @@ function CharMaker() {
                 var mask = ImageManager.loadBitmap(image_path, filename+"_c");
                 image.addLoadListener(function () {
                     mask.addLoadListener(function () {
-                        clone = ImageManager.loadBitmap("",order[step].toLowerCase().replace(/\d+/g, ''))
-                        clone.resize(image.width,image.height)
-                        clone.addLoadListener(function (){ 
-                            console.log("ooks")
-                            applyMask_grad(clone,image,mask)
-                            PlayerImage.characterCanvas.getContext('2d').drawImage(clone.canvas,0,0)
+                        if (!(filename in imageChar)) {
+                            imageChar[filename] = new Bitmap(image.width,image.height)
+                        }
+                        
+                        imageChar[filename].addLoadListener(function (){ 
+                            applyMask_grad(imageChar[filename],image,mask)
+                            PlayerImage.characterCanvas.getContext('2d').drawImage(imageChar[filename].canvas,0,0)
                             step+=1
                             grad_skin_load()
                         })
@@ -255,13 +257,14 @@ function CharMaker() {
                     } else {
                         gradActual = grad[gradByType[maskColor[mask.getPixel(x,y)]]]
                         t = niv_gris(colorOriginal)
-                        //t= t*1.1
+                        //t= t*1.2
                         t = t/255
 
                         newColor = gradActual.getPixel(gradActual.width-(t*(gradActual.width)), (charProperties.colors[maskColor[mask.getPixel(x,y)]])*4)
                     }
-                    if (clone.getPixel(x,y)==newColor) {
-                        //return clone
+                    if (clone.getPixel(x,y)==newColor && newColor != "#000000") {
+                        console.log(clone.getPixel(x,y),newColor)
+                        return;
                     }
                     clone.fillRect(x,y,1,1,newColor)
                 }
@@ -348,16 +351,22 @@ function CharMaker() {
             for (t in info_tab[key].option) {
                 let value = info_tab[key].option[t]
                 document.getElementById(value+"L").addEventListener('click',function (){
-                    n = Number(charProperties.patterns[value].slice(-2))
-                    n = Math.max(n-1,0)
-                    charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
-                    document.getElementById(value).innerHTML = charProperties.patterns[value]
+                    if (step == order.length) {
+                        n = Number(charProperties.patterns[value].slice(-2))
+                        n = Math.max(n-1,0)
+                        charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
+                        document.getElementById(value).innerHTML = charProperties.patterns[value]
+                        CharMaker.actualise()
+                    }
                 })
                 document.getElementById(value+"R").addEventListener('click',function (){
-                    n = Number(charProperties.patterns[value].slice(-2))
-                    n = Math.min(n+1,15)
-                    charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
-                    document.getElementById(value).innerHTML = charProperties.patterns[value]
+                    if (step == order.length) {
+                        n = Number(charProperties.patterns[value].slice(-2))
+                        n = Math.min(n+1,15)
+                        charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
+                        document.getElementById(value).innerHTML = charProperties.patterns[value]
+                        CharMaker.actualise()
+                    }
                 })
             }
         }
