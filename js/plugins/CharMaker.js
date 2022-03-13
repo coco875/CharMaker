@@ -185,6 +185,7 @@ function CharMaker() {
     function grad_skin_load(){
         if (step == order.length){
             final_save(PlayerImage.character)
+            cpcharProperties.colors = JSON.parse(JSON.stringify(charProperties.colors))
         } else {
             let item = order[step].toLowerCase().replace(/\d+/g, '')
             var filename = type+"_"+order[step]+"_"+charProperties.patterns[item]
@@ -198,10 +199,10 @@ function CharMaker() {
                         }
                         
                         imageChar[filename].addLoadListener(function (){ 
-                            if (charProperties.patterns[item] != cpcharProperties.patterns[item] || charProperties.colors[item] != cpcharProperties.colors[item]) {
+                            if (charProperties.patterns[item] != cpcharProperties.patterns[order[step]] || cpcharProperties.colors != charProperties.colors) {
+                                console.log(cpcharProperties,charProperties)
                                 applyMask_grad(imageChar[filename],image,mask)
-                                cpcharProperties.patterns[item] = charProperties.patterns[item]
-                                cpcharProperties.colors[item] = charProperties.colors[item]
+                                cpcharProperties.patterns[order[step]] = charProperties.patterns[item]
                             }
                             PlayerImage.character.blt(imageChar[filename],0,0,imageChar[filename].width,imageChar[filename].height,0,0)
                             step+=1
@@ -280,7 +281,10 @@ function CharMaker() {
 
                     if (colorOriginal in convertColor) {
                         newColor = convertColor[colorOriginal]
-                    } else {
+                        clone.fillRect(x,y,1,1,newColor)
+                    } else if (charProperties.colors[maskColor[mask.getPixel(x,y)]] != cpcharProperties.colors[maskColor[mask.getPixel(x,y)]] || true){
+
+                        
                         gradActual = grad[gradByType[maskColor[mask.getPixel(x,y)]]]
                         t = niv_gris(colorOriginal)
                         //t= t*0.5
@@ -290,12 +294,13 @@ function CharMaker() {
                         //console.log(x_color,y_color)
                         newColor = gradActual.getPixel(x_color, y_color)
                         convertColor[colorOriginal] = newColor
+                        clone.fillRect(x,y,1,1,newColor)
                     }
                     if (clone.getPixel(x,y)==newColor && newColor != "#000000") {
                         //console.log(clone.getPixel(x,y),newColor)
                         //return;
                     }
-                    clone.fillRect(x,y,1,1,newColor)
+                    
                 }
             }
         }
