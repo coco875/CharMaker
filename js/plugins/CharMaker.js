@@ -17,6 +17,7 @@ function CharMaker() {
     a = 0
     PlayerImage = {}
     imageChar = {}
+    maskType = {}
     PlayerImage.character = new Bitmap(width,height)
     PlayerImage.character
     animex = 0
@@ -182,6 +183,28 @@ function CharMaker() {
         grad.grad_skin.addLoadListener(grad_skin_load)
     }
 
+    function diff(obj1, obj2) {
+        const result = {};
+        if (Object.is(obj1, obj2)) {
+            return undefined;
+        }
+        if (!obj2 || typeof obj2 !== 'object') {
+            return obj2;
+        }
+        Object.keys(obj1 || {}).concat(Object.keys(obj2 || {})).forEach(key => {
+            if(obj2[key] !== obj1[key] && !Object.is(obj1[key], obj2[key])) {
+                result[key] = obj2[key];
+            }
+            if(typeof obj2[key] === 'object' && typeof obj1[key] === 'object') {
+                const value = diff(obj1[key], obj2[key]);
+                if (value !== undefined) {
+                    result[key] = value;
+                }
+            }
+        });
+        return result;
+    }
+
     function grad_skin_load(){
         if (step == order.length){
             final_save(PlayerImage.character)
@@ -197,11 +220,15 @@ function CharMaker() {
                         if (!(filename in imageChar)) {
                             imageChar[filename] = new Bitmap(image.width,image.height)
                         }
+                        col = false
+                        for (var i in maskType[item]) {
+                            value = maskType[item][i]
+                            if (cpcharProperties.colors[value]!=charProperties.colors[value]) col = true
+                        }
                         
                         imageChar[filename].addLoadListener(function (){ 
-                            if (charProperties.patterns[item] != cpcharProperties.patterns[order[step]] || cpcharProperties.colors != charProperties.colors) {
-                                console.log(cpcharProperties,charProperties)
-                                applyMask_grad(imageChar[filename],image,mask)
+                            if (charProperties.patterns[item] != cpcharProperties.patterns[order[step]] || col) {
+                                applyMask_grad(imageChar[filename],image,mask,item)
                                 cpcharProperties.patterns[order[step]] = charProperties.patterns[item]
                             }
                             PlayerImage.character.blt(imageChar[filename],0,0,imageChar[filename].width,imageChar[filename].height,0,0)
@@ -271,7 +298,7 @@ function CharMaker() {
         return moy
     }
 
-    function applyMask_grad(clone,image,mask) {
+    function applyMask_grad(clone,image,mask,item) {
         let convertColor = {}
         
         for (x=0;x<mask.width;x+=1) {
@@ -282,9 +309,9 @@ function CharMaker() {
                     if (colorOriginal in convertColor) {
                         newColor = convertColor[colorOriginal]
                         clone.fillRect(x,y,1,1,newColor)
-                    } else if (charProperties.colors[maskColor[mask.getPixel(x,y)]] != cpcharProperties.colors[maskColor[mask.getPixel(x,y)]] || true){
-
-                        
+                    } else if (charProperties.colors[maskColor[mask.getPixel(x,y)]] != cpcharProperties.colors[maskColor[mask.getPixel(x,y)]] || charProperties.patterns[item] != cpcharProperties.patterns[order[step]]){
+                        if (!maskType[item]) maskType[item] = []
+                        maskType[item].push(maskColor[mask.getPixel(x,y)])
                         gradActual = grad[gradByType[maskColor[mask.getPixel(x,y)]]]
                         t = niv_gris(colorOriginal)
                         //t= t*0.5
