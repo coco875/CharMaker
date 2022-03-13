@@ -1,2 +1,2 @@
 # CharMaker
- a creator of character in game
+a plugin for RPG Maker MZ to create character in game
