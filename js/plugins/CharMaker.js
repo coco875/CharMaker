@@ -501,7 +501,7 @@ function CharMaker() {
                     document.getElementById(value+"cR").addEventListener('click',function (){
                         if (step == order.length) {
                             n = Number(charProperties.colors[value])
-                            n = Math.min(n+1,15)
+                            n = Math.min(n+1,30)
                             charProperties.colors[value] = n
                             document.getElementById(value+"c").innerHTML = String(n)
                             CharMaker.actualise()
