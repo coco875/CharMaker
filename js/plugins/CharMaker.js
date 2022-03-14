@@ -13,7 +13,6 @@ function CharMaker() {
         var fs = require('fs');
         web = false
     } catch (error) {
-        console.log(error)
         web = true
     }
     const pluginName = "CharMaker";
@@ -164,72 +163,55 @@ function CharMaker() {
 
     fileGenerator = "js/plugins/generator/"
     var charProperties
-    if (web) {
-        fetch("./test.json").then(
-            function(u){ return u.json();}
-          ).then(
-            function(json){
-                charProperties = json;
-            }
-        )
-    } else {
-        json = fs.readFileSync("test.json")
-        charProperties = JSON.parse(json)
-    }
-    console.log(charProperties)
+    import_json("test.json", (j) => {
+        charProperties = j
+    });
     var cpcharProperties = {patterns:{},colors:{}}
     var maskColor
     var order
     var gradByType
 
-    function import_json (file) {
-        t = {}
-        if (web) {
-            fetch("./test.json")
-            .then(response => {
-            return response.json();
-            })
-            .then(data => t = data);
-        } else {
-            json = fs.readFileSync("test.json")
-            t = JSON.parse(json)
-        }
-        return t
+    function import_json (file,callback) {
+        var xmlhttp = new XMLHttpRequest();
+        var url = file;
+
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                t = JSON.parse(this.responseText);
+                callback(t)
+            }
+        };
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send();
     }
 
-    function file_exist (file) {
-        if (web) {
-            fetch("http://localhost:3000/file"
-            ).then((res) => z = res.ok);
-            return z
-        } else {
-            return fs.existsSync(file)
-        }
+    function file_exist (file, callback) {
+        var xmlhttp = new XMLHttpRequest();
+        var url = file;
+
+        xmlhttp.onreadystatechange = function() {
+            console.log(this)
+            if (this.readyState == 4 && this.status == 200) {
+                callback(true)
+            } else if (this.readyState == 4 && this.status == 404) {
+                callback(false)
+            }
+        };
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send();
     }
 
-    if (web) {
-        fetch(fileGenerator+"maks_color.json")
-        .then(response => {
-        return response.json();
-        })
-        .then(data => maskColor = data);
+    import_json(fileGenerator+"maks_color.json", (j) => {
+        maskColor = j
+    });
 
-        fetch(fileGenerator+"order.json")
-        .then(response => {
-        return response.json();
-        })
-        .then(data => order = data);
+    import_json(fileGenerator+"order.json", (j) => {
+        order = j
+    });
 
-        fetch(fileGenerator+"grad_by_type.json")
-        .then(response => {
-        return response.json();
-        })
-        .then(data => gradByType = data);
-    } else {
-        maskColor = JSON.parse(fs.readFileSync(fileGenerator+"maks_color.json"))
-        order = JSON.parse(fs.readFileSync(fileGenerator+"order.json"))
-        gradByType = JSON.parse(fs.readFileSync(fileGenerator+"grad_by_type.json"))
-    }
+    import_json(fileGenerator+"grad_by_type.json", (j) => {
+        gradByType = j
+    });
     
     var step = 0
     var grad = {}
@@ -254,40 +236,48 @@ function CharMaker() {
 
     function grad_skin_load(){
         if (step == order.length){
-            final_save(PlayerImage.character)
+            if (!web) {
+                final_save(PlayerImage.character)
+            }
             cpcharProperties.colors = JSON.parse(JSON.stringify(charProperties.colors))
         } else {
+            console.log(step)
             let item = order[step].toLowerCase().replace(/\d+/g, '')
             var filename = type+"_"+order[step]+"_"+charProperties.patterns[item]
-            if (item in charProperties.patterns && fs.existsSync(image_path+filename+".png")){
-                var image = ImageManager.loadBitmap(image_path, filename);
-                var mask = ImageManager.loadBitmap(image_path, filename+"_c");
-                image.addLoadListener(function () {
-                    mask.addLoadListener(function () {
-                        if (!(filename in imageChar)) {
-                            imageChar[filename] = new Bitmap(image.width,image.height)
-                        }
-                        col = false
-                        for (var i in maskType[item]) {
-                            value = maskType[item][i]
-                            if (cpcharProperties.colors[value]!=charProperties.colors[value]) col = true
-                        }
-                        
-                        imageChar[filename].addLoadListener(function (){ 
-                            if (charProperties.patterns[item] != cpcharProperties.patterns[order[step]] || col) {
-                                applyMask_grad(imageChar[filename],image,mask,item)
-                                cpcharProperties.patterns[order[step]] = charProperties.patterns[item]
-                            }
-                            PlayerImage.character.blt(imageChar[filename],0,0,imageChar[filename].width,imageChar[filename].height,0,0)
-                            step+=1
-                            grad_skin_load()
+            if (item in charProperties.patterns){
+                file_exist(image_path+filename+".png",(t)=>{
+                    console.log(t)
+                    if (t) {
+                        var image = ImageManager.loadBitmap(image_path, filename);
+                        var mask = ImageManager.loadBitmap(image_path, filename+"_c");
+                        image.addLoadListener(function () {
+                            mask.addLoadListener(function () {
+                                if (!(filename in imageChar)) {
+                                    imageChar[filename] = new Bitmap(image.width,image.height)
+                                }
+                                col = false
+                                for (var i in maskType[item]) {
+                                    value = maskType[item][i]
+                                    if (cpcharProperties.colors[value]!=charProperties.colors[value]) col = true
+                                }
+                                
+                                imageChar[filename].addLoadListener(function (){ 
+                                    if (charProperties.patterns[item] != cpcharProperties.patterns[order[step]] || col) {
+                                        applyMask_grad(imageChar[filename],image,mask,item)
+                                        cpcharProperties.patterns[order[step]] = charProperties.patterns[item]
+                                    }
+                                    PlayerImage.character.blt(imageChar[filename],0,0,imageChar[filename].width,imageChar[filename].height,0,0)
+                                    step+=1
+                                    grad_skin_load()
+                                })
+                            })
                         })
-                    })
+                    } else {
+                        step+=1
+                        grad_skin_load()
+                    }
                 })
-            } else {
-                step+=1
-                grad_skin_load()
-            }
+            } 
         }
     }
 
@@ -320,15 +310,8 @@ function CharMaker() {
         fs.writeFileSync('img/characters/image.png', buf);
     }
 
-    var type = "TV"
-    var gender = ""
-    if (charProperties.gender == "male") {
-        gender = "Male"
-    } else {
-        gender = "Female"
-    }
-
-    var image_path = fileGenerator+type+"/"+gender+"/";
+    var image_path
+    var type
 
     function distance_color(c1,c2){
         rgbc1 = hexToRgb(c1)
@@ -402,6 +385,15 @@ function CharMaker() {
     };
 
     CharMaker.prototype.createCharMaker = function(){
+        type = "TV"
+        var gender = ""
+        if (charProperties.gender == "male") {
+            gender = "Male"
+        } else {
+            gender = "Female"
+        }
+
+        image_path = fileGenerator+type+"/"+gender+"/";
         tab_html = ""
         tabpanel_html = ""
         for (var key in info_tab) {
@@ -413,7 +405,6 @@ function CharMaker() {
             let option_html = ""
             for (t in info_tab[key].option){
                 let value = info_tab[key].option[t]
-                console.log(value)
                 if ("function" != typeof(value)) {
                     option_html += option.replace(/opt/g,value).replace("vpt",charProperties.patterns[value])
                 }
