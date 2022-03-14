@@ -193,7 +193,7 @@ function CharMaker() {
             console.log(this)
             if (this.readyState == 4 && this.status == 200) {
                 callback(true)
-            } else if (this.readyState == 4 && this.status == 404) {
+            } else if (this.readyState == 4 && (this.status == 404 || this.status == 0)) {
                 callback(false)
             }
         };
@@ -515,9 +515,9 @@ function CharMaker() {
     CharMaker.endScene = function(){
         SceneManager.goto(Scene_Map)
         document.getElementById("CharMaker").style.display = "none"
-        $gameActors.actor(1).setCharacterImage("image",0);
-        $gamePlayer.refresh();
-        bit = ImageManager.loadCharacter('image')
+        // $gameActors.actor(1).setCharacterImage("image",0);
+        // $gamePlayer.refresh();
+        bit = ImageManager.loadCharacter($gamePlayer._characterName)
         bit.addLoadListener(function(){
             bit.clearRect(0,0,actorWidth,actorHeight)
             bit.blt(PlayerImage.character,0,0,PlayerImage.character.width,PlayerImage.character.height,0,0)
