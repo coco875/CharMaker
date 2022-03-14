@@ -164,7 +164,13 @@ function CharMaker() {
     fileGenerator = "js/plugins/generator/"
     var charProperties
     import_json("test.json", (j) => {
-        charProperties = j
+        if (StorageManager.exists("char")){
+            StorageManager.loadObject("char").then((value) => {
+                charProperties = value
+            })
+        } else {
+            charProperties = j
+        }
     });
     var cpcharProperties = {patterns:{},colors:{}}
     var maskColor
@@ -523,6 +529,7 @@ function CharMaker() {
             bit.blt(PlayerImage.character,0,0,PlayerImage.character.width,PlayerImage.character.height,0,0)
         })
         clearInterval(a)
+        StorageManager.saveObject("char",charProperties)
     }
 
     function callbackClosure(i, callback) {
