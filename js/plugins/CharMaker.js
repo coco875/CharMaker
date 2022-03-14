@@ -3,14 +3,19 @@
  * @text Show menu of selection
  */
 
-
-var fs = require('fs');
-
 function CharMaker() { 
     this.initialize.apply(this, arguments);
 }
 
 (function () {
+    web = true
+    try {
+        var fs = require('fs');
+        web = false
+    } catch (error) {
+        console.log(error)
+        web = true
+    }
     const pluginName = "CharMaker";
     width = 576
     height = 384
@@ -31,7 +36,7 @@ function CharMaker() {
         SceneManager.goto(CharMaker);
     });
 
-    option = `opt<br><i class="arrow left" id="optL">&#8592</i><div id="opt" style="display:inline;">vpt</div><i class="arrow right" id="optR">&#8594</i><br>`
+    option = 'opt<br><i class="arrow left" id="optL">&#8592</i><div id="opt" style="display:inline;">vpt</div><i class="arrow right" id="optR">&#8594</i><br>'
     color_button = `opt<br><i class="arrow left" id="optcL">&#8592</i><div id="optc" style="display:inline;">cpt</div><i class="arrow right" id="optcR">&#8594</i><br>`
 
     tab = `<li id="txt" style="
@@ -70,16 +75,17 @@ function CharMaker() {
             `,
             "draw":function () {
                 let canvas = document.getElementById("characterCanvas")
-                let ctx = canvas.getContext("2d")
-                ctx.clearRect(0,0,canvas.width,canvas.height)
-                ctx.drawImage(
-                    PlayerImage.character.canvas, 
-                    animex*spriteWidth, 
-                    animey*spriteHeight, 
-                    spriteWidth, 
-                    spriteHeight, 
-                    0, 0, 
-                    canvas.width, canvas.height)
+                if (canvas) {
+                    let ctx = canvas.getContext("2d")
+                    ctx.clearRect(0,0,canvas.width,canvas.height)
+                    ctx.drawImage(
+                        PlayerImage.character.canvas, 
+                        animex*spriteWidth, 
+                        animey*spriteHeight, 
+                        spriteWidth, 
+                        spriteHeight, 
+                        0, 0, 
+                        canvas.width, canvas.height)
                     animex++
                     if (animex == 3) {
                         animex = 0
@@ -88,6 +94,7 @@ function CharMaker() {
                     if (animey==4) {
                         animey = 0
                     }
+                }
             },
             "option":[
                 "body",
@@ -156,12 +163,74 @@ function CharMaker() {
     }
 
     fileGenerator = "js/plugins/generator/"
-    json = fs.readFileSync("test.json")
-    var charProperties = JSON.parse(json)
+    var charProperties
+    if (web) {
+        fetch("./test.json").then(
+            function(u){ return u.json();}
+          ).then(
+            function(json){
+                charProperties = json;
+            }
+        )
+    } else {
+        json = fs.readFileSync("test.json")
+        charProperties = JSON.parse(json)
+    }
+    console.log(charProperties)
     var cpcharProperties = {patterns:{},colors:{}}
-    const maskColor = JSON.parse(fs.readFileSync(fileGenerator+"maks_color.json"))
-    const order = JSON.parse(fs.readFileSync(fileGenerator+"order.json"))
-    const gradByType = JSON.parse(fs.readFileSync(fileGenerator+"grad_by_type.json"))
+    var maskColor
+    var order
+    var gradByType
+
+    function import_json (file) {
+        t = {}
+        if (web) {
+            fetch("./test.json")
+            .then(response => {
+            return response.json();
+            })
+            .then(data => t = data);
+        } else {
+            json = fs.readFileSync("test.json")
+            t = JSON.parse(json)
+        }
+        return t
+    }
+
+    function file_exist (file) {
+        if (web) {
+            fetch("http://localhost:3000/file"
+            ).then((res) => z = res.ok);
+            return z
+        } else {
+            return fs.existsSync(file)
+        }
+    }
+
+    if (web) {
+        fetch(fileGenerator+"maks_color.json")
+        .then(response => {
+        return response.json();
+        })
+        .then(data => maskColor = data);
+
+        fetch(fileGenerator+"order.json")
+        .then(response => {
+        return response.json();
+        })
+        .then(data => order = data);
+
+        fetch(fileGenerator+"grad_by_type.json")
+        .then(response => {
+        return response.json();
+        })
+        .then(data => gradByType = data);
+    } else {
+        maskColor = JSON.parse(fs.readFileSync(fileGenerator+"maks_color.json"))
+        order = JSON.parse(fs.readFileSync(fileGenerator+"order.json"))
+        gradByType = JSON.parse(fs.readFileSync(fileGenerator+"grad_by_type.json"))
+    }
+    
     var step = 0
     var grad = {}
     grad.grad_common = ImageManager.loadBitmap(fileGenerator, "grad_common")
@@ -181,28 +250,6 @@ function CharMaker() {
 
     function grad_hair_load(){
         grad.grad_skin.addLoadListener(grad_skin_load)
-    }
-
-    function diff(obj1, obj2) {
-        const result = {};
-        if (Object.is(obj1, obj2)) {
-            return undefined;
-        }
-        if (!obj2 || typeof obj2 !== 'object') {
-            return obj2;
-        }
-        Object.keys(obj1 || {}).concat(Object.keys(obj2 || {})).forEach(key => {
-            if(obj2[key] !== obj1[key] && !Object.is(obj1[key], obj2[key])) {
-                result[key] = obj2[key];
-            }
-            if(typeof obj2[key] === 'object' && typeof obj1[key] === 'object') {
-                const value = diff(obj1[key], obj2[key]);
-                if (value !== undefined) {
-                    result[key] = value;
-                }
-            }
-        });
-        return result;
     }
 
     function grad_skin_load(){
@@ -323,10 +370,6 @@ function CharMaker() {
                         convertColor[colorOriginal] = newColor
                         clone.fillRect(x,y,1,1,newColor)
                     }
-                    if (clone.getPixel(x,y)==newColor && newColor != "#000000") {
-                        //console.log(clone.getPixel(x,y),newColor)
-                        //return;
-                    }
                     
                 }
             }
@@ -370,12 +413,17 @@ function CharMaker() {
             let option_html = ""
             for (t in info_tab[key].option){
                 let value = info_tab[key].option[t]
-                option_html += option.replace(/opt/g,value).replace("vpt",charProperties.patterns[value])
+                console.log(value)
+                if ("function" != typeof(value)) {
+                    option_html += option.replace(/opt/g,value).replace("vpt",charProperties.patterns[value])
+                }
             }
             let color_html = ""
             for (t in info_tab[key].color){
                 let value = info_tab[key].color[t]
-                color_html += color_button.replace(/opt/g,value).replace("cpt",charProperties.colors[value])
+                if ("function" != typeof(value)) {
+                    color_html += color_button.replace(/opt/g,value).replace("cpt",charProperties.colors[value])
+                }
             }
             txt = txt.replace("option",option_html)
             txt = txt.replace("clr",color_html)
@@ -420,45 +468,49 @@ function CharMaker() {
         for (var key in info_tab) {
             for (t in info_tab[key].option) {
                 let value = info_tab[key].option[t]
-                document.getElementById(value+"L").addEventListener('click',function (){
-                    if (step == order.length) {
-                        n = Number(charProperties.patterns[value].slice(-2))
-                        n = Math.max(n-1,0)
-                        charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
-                        document.getElementById(value).innerHTML = charProperties.patterns[value]
-                        CharMaker.actualise()
-                    }
-                })
-                document.getElementById(value+"R").addEventListener('click',function (){
-                    if (step == order.length) {
-                        n = Number(charProperties.patterns[value].slice(-2))
-                        n = Math.min(n+1,15)
-                        charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
-                        document.getElementById(value).innerHTML = charProperties.patterns[value]
-                        CharMaker.actualise()
-                    }
-                })
+                if ("function" != typeof(value)) {
+                    document.getElementById(value+"L").addEventListener('click',function (){
+                        if (step == order.length) {
+                            n = Number(charProperties.patterns[value].slice(-2))
+                            n = Math.max(n-1,0)
+                            charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
+                            document.getElementById(value).innerHTML = charProperties.patterns[value]
+                            CharMaker.actualise()
+                        }
+                    })
+                    document.getElementById(value+"R").addEventListener('click',function (){
+                        if (step == order.length) {
+                            n = Number(charProperties.patterns[value].slice(-2))
+                            n = Math.min(n+1,15)
+                            charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
+                            document.getElementById(value).innerHTML = charProperties.patterns[value]
+                            CharMaker.actualise()
+                        }
+                    })
+                }
             }
             for (t in info_tab[key].color) {
                 let value = info_tab[key].color[t]
-                document.getElementById(value+"cL").addEventListener('click',function (){
-                    if (step == order.length) {
-                        n = Number(charProperties.colors[value])
-                        n = Math.max(n-1,0)
-                        charProperties.colors[value] = n
-                        document.getElementById(value+"c").innerHTML = String(n)
-                        CharMaker.actualise()
-                    }
-                })
-                document.getElementById(value+"cR").addEventListener('click',function (){
-                    if (step == order.length) {
-                        n = Number(charProperties.colors[value])
-                        n = Math.min(n+1,15)
-                        charProperties.colors[value] = n
-                        document.getElementById(value+"c").innerHTML = String(n)
-                        CharMaker.actualise()
-                    }
-                })
+                if ("function" != typeof(value)) {
+                    document.getElementById(value+"cL").addEventListener('click',function (){
+                        if (step == order.length) {
+                            n = Number(charProperties.colors[value])
+                            n = Math.max(n-1,0)
+                            charProperties.colors[value] = n
+                            document.getElementById(value+"c").innerHTML = String(n)
+                            CharMaker.actualise()
+                        }
+                    })
+                    document.getElementById(value+"cR").addEventListener('click',function (){
+                        if (step == order.length) {
+                            n = Number(charProperties.colors[value])
+                            n = Math.min(n+1,15)
+                            charProperties.colors[value] = n
+                            document.getElementById(value+"c").innerHTML = String(n)
+                            CharMaker.actualise()
+                        }
+                    })
+                }
             }
         }
     }
