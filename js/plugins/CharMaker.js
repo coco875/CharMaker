@@ -54,6 +54,7 @@ function CharMaker() {
     tabpanel = `<div id="txt" class="tabpanel" style="display:none">content</div>`
 
     half_width = 816/2
+
     info_tab = {
         "Character":{
             "id":"character",
@@ -61,14 +62,10 @@ function CharMaker() {
             <div class="row" style="display: flex;">
                 <div class="column" style="width: 34%;">
                 <canvas id="characterCanvas" width=${spriteWidth} height=${spriteHeight} style="display: block; margin: 0 auto; width: ${spriteWidth*4}px; height: ${spriteHeight*4}px; image-rendering: -moz-crisp-edges; image-rendering: -webkit-crisp-edges; image-rendering: pixelated; image-rendering: crisp-edges;"></canvas>
-                <button onclick="CharMaker.actualise()" style="display: block; margin: 0 auto;">Refresh</button>
                 <button onclick="CharMaker.endScene()" style="display: block; margin: 0 auto;">Save</button>
                 </div>
-                <div class="column" style="width: 33%;">
-                <div style="text-align: center; margin-top: 8px; color: white;">option</div>
-                </div>
-                <div class="column" style="width: 33%;">
-                <div style="text-align: center; margin-top: 8px; color: white;">clr</div>
+                <div class="column" style="width: 66%;">
+                <div style="text-align: center; margin-top: 8px; color: white; display: block;">option</div>
                 </div>
             </div>
             `,
@@ -160,6 +157,8 @@ function CharMaker() {
             `
         }
     }
+
+    console.log(info_tab)
 
     fileGenerator = "js/plugins/generator/"
     var charProperties
@@ -405,22 +404,55 @@ function CharMaker() {
             }
             tab_html += tab.replace(/txt/g,key)
             let txt = tabpanel.replace(/txt/g,info_tab[key].id).replace(/content/g,info_tab[key].content)
-            let option_html = ""
+            let html_glob = ""
+            let option_html = `<div class="row" style="display: flex;">`
+            let button = ``
+            button += tab.replace(/txt/g,"Option")
+            button += tab.replace(/txt/g,"Color")
+            html_glob += `<ul style="
+            display: block;
+            height:32px;
+            width: 100%;
+            margin:0;
+            padding:0;
+            background:#393c43;">
+                ${button}
+            </ul>`
+            i = 0
+            col_option = ""
             for (t in info_tab[key].option){
                 let value = info_tab[key].option[t]
                 if ("function" != typeof(value)) {
-                    option_html += option.replace(/opt/g,value).replace("vpt",charProperties.patterns[value])
+                    col_option += option.replace(/opt/g,value).replace("vpt",charProperties.patterns[value])
+                    if (i%10==0 && i!= 0) {
+                        option_html += `<div class="column" style="width: 50%;">${col_option}</div>`
+                        col_option = ""
+                    }
+                    i++
                 }
             }
-            let color_html = ""
+            option_html += `<div class="column" style="width: 50%;">${col_option}</div></div>`
+            html_glob += tabpanel.replace(/txt/g,info_tab[key].id+"option").replace(/content/g,option_html)
+            let color_html = `<div class="row" style="display: flex;">`
+            i = 0
+            col_color = ""
             for (t in info_tab[key].color){
                 let value = info_tab[key].color[t]
                 if ("function" != typeof(value)) {
-                    color_html += color_button.replace(/opt/g,value).replace("cpt",charProperties.colors[value])
+                    console.log(value)
+                    col_color += color_button.replace(/opt/g,value).replace("cpt",charProperties.colors[value])
+                    if (i%10==0 && i!= 0) {
+                        color_html += `<div class="column" style="width: 50%;">${col_color}</div>`
+                        col_color = ""
+                    }
+                    i++
                 }
             }
-            txt = txt.replace("option",option_html)
-            txt = txt.replace("clr",color_html)
+            color_html += `<div class="column" style="width: 50%;">${col_color}</div></div>`
+            console.log(color_html)
+            html_glob += tabpanel.replace(/txt/g,info_tab[key].id+"color").replace(/content/g,color_html)
+            
+            txt = txt.replace("option",html_glob)
             tabpanel_html += txt
         }
         
@@ -431,19 +463,24 @@ function CharMaker() {
             z-index: 999999999999999; /* yep it's a lot but eh */ 
             margin: 0 auto;
             left: 50vw; 
+            width: 100%;
+            margin:0;
+            padding:0;
             transform: translate(-50%, 0);
         "
         >
         <div id="tabs">
             <ul style="
-            display:inline-block;
+            display: block;
             height:32px;
-            width:${Graphics._width}px;
+            width: 100%;
+            margin:0;
+            padding:0;
             background:#393c43;">
                 ${tab_html}
             </ul>
         </div>
-        <div id="tabcontent">
+        <div id="tabcontent" style="display: block; height: auto">
         ${tabpanel_html}
         </div>
         </div>
@@ -451,10 +488,28 @@ function CharMaker() {
         `
         document.getElementById('text_zone').innerHTML = html;
         i = 0
+
         for (var key in info_tab) {
+            colopt = {
+                "Color":{
+                    "id": info_tab[key].id+"color"
+                },
+                "Option":{
+                    "id": info_tab[key].id+"option"
+                }
+            }
             document.getElementById(key).addEventListener('click', callbackClosure( i, function(i) {
-                selView(i)
+                selView(i, info_tab)
             }) );
+            if ("color" in info_tab[key]) {
+                document.getElementById("Color").addEventListener('click', callbackClosure( colopt, function(colopt) {
+                    selView(0, colopt)
+                }) );
+                document.getElementById("Option").addEventListener('click', callbackClosure( colopt, function(colopt) {
+                    selView(1, colopt)
+                }) );
+                selView(1, colopt)
+            }
             i++
         }
         //canvas = document.getElementById("characterCanvas");
@@ -488,6 +543,7 @@ function CharMaker() {
             for (t in info_tab[key].color) {
                 let value = info_tab[key].color[t]
                 if ("function" != typeof(value)) {
+                    console.log(value+"cL")
                     document.getElementById(value+"cL").addEventListener('click',function (){
                         if (step == order.length) {
                             n = Number(charProperties.colors[value])
@@ -537,25 +593,22 @@ function CharMaker() {
         }
       }
 
-    function selView(n) {
+    function selView(n, dict) {
         i=0
-        for (var key in info_tab) {
-            console.log(key)
+        for (var key in dict) {
+            console.log(dict[key].id)
             if (i==n){
-                document.getElementById(info_tab[key].id).style.display = "inline"
+                document.getElementById(dict[key].id).style.display = "inline"
                 document.getElementById(key).style.background = "#34373c"
             } else {
-                document.getElementById(info_tab[key].id).style.display = "none"
+                document.getElementById(dict[key].id).style.display = "none"
                 document.getElementById(key).style.background = "#393c43"
-            }
-            if (i<Object.keys(info_tab)){
-                return
             }
             i++
         }
     }
     
     function selInit() {
-        selView(0)
+        selView(0, info_tab)
     }
 })();
