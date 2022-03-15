@@ -141,7 +141,7 @@ function CharMaker() {
                 <canvas id="faceCanvas"></canvas>
                 </div>
                 <div class="column" style="width: 50%;">
-                <div style="text-align: center; margin-top: 8px; color: white;">jdw</div>
+                <div style="text-align: center; margin-top: 8px; color: white;">work in progress</div>
                 </div>
             </div>
             `
@@ -154,7 +154,7 @@ function CharMaker() {
                 <canvas id="battlerCanvas"></canvas>
                 </div>
                 <div class="column" style="width: 50%;">
-                <div style="text-align: center; margin-top: 8px; color: white;">ufytd</div>
+                <div style="text-align: center; margin-top: 8px; color: white;">work in progress</div>
                 </div>
             </div>
             `
@@ -196,7 +196,6 @@ function CharMaker() {
         var url = file;
 
         xmlhttp.onreadystatechange = function() {
-            console.log(this)
             if (this.readyState == 4 && this.status == 200) {
                 callback(true)
             } else if (this.readyState == 4 && (this.status == 404 || this.status == 0)) {
@@ -247,12 +246,10 @@ function CharMaker() {
             }
             cpcharProperties.colors = JSON.parse(JSON.stringify(charProperties.colors))
         } else {
-            console.log(step)
             let item = order[step].toLowerCase().replace(/\d+/g, '')
             var filename = type+"_"+order[step]+"_"+charProperties.patterns[item]
             if (item in charProperties.patterns){
                 file_exist(image_path+filename+".png",(t)=>{
-                    console.log(t)
                     if (t) {
                         var image = ImageManager.loadBitmap(image_path, filename);
                         var mask = ImageManager.loadBitmap(image_path, filename+"_c");
@@ -453,10 +450,12 @@ function CharMaker() {
         </div>
         `
         document.getElementById('text_zone').innerHTML = html;
-        for (i=0;i<Object.keys(info_tab).length;i+=1) {
+        i = 0
+        for (var key in info_tab) {
             document.getElementById(key).addEventListener('click', callbackClosure( i, function(i) {
                 selView(i)
             }) );
+            i++
         }
         //canvas = document.getElementById("characterCanvas");
         //ctx = canvas.getContext("2d");
@@ -541,6 +540,7 @@ function CharMaker() {
     function selView(n) {
         i=0
         for (var key in info_tab) {
+            console.log(key)
             if (i==n){
                 document.getElementById(info_tab[key].id).style.display = "inline"
                 document.getElementById(key).style.background = "#34373c"
