@@ -133,12 +133,12 @@ function CharMaker() {
         "Face":{
             "id":"face",
             "content":`
-            <div class="row" style="display: flex;">>
+            <div class="row" style="display: flex;">
                 <div class="column" style="width: 50%;">
                 <canvas id="faceCanvas"></canvas>
                 </div>
                 <div class="column" style="width: 50%;">
-                <div style="text-align: center; margin-top: 8px; color: white;">work in progress</div>
+                <div style="text-align: center; margin-top: 8px; color: white; display: block;">work in progress</div>
                 </div>
             </div>
             `
@@ -146,12 +146,12 @@ function CharMaker() {
         "Battler":{
             "id":"battler",
             "content":`
-            <div class="row" style="display: flex;">>
+            <div class="row" style="display: flex;">
                 <div class="column" style="width: 50%;">
                 <canvas id="battlerCanvas"></canvas>
                 </div>
                 <div class="column" style="width: 50%;">
-                <div style="text-align: center; margin-top: 8px; color: white;">work in progress</div>
+                <div style="text-align: center; margin-top: 8px; color: white; display: block;">work in progress</div>
                 </div>
             </div>
             `
@@ -466,6 +466,8 @@ function CharMaker() {
             margin:0;
             padding:0;
             transform: translate(-50%, 0);
+            font-size: large; 
+            font-family:Comic Sans MS, Comic Sans, cursive;
         "
         >
         <div id="tabs">
