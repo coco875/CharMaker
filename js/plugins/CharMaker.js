@@ -466,7 +466,7 @@ function CharMaker() {
             margin:0;
             padding:0;
             transform: translate(-50%, 0);
-            font-size: 100%; 
+            font-size: 80%; 
             font-family:Comic Sans MS, Comic Sans, cursive;
         "
         >
@@ -588,18 +588,16 @@ function CharMaker() {
 
     var DMSG = DataManager.saveGame
     DataManager.saveGame = function (n,p) {
-        StorageManager.saveObject("char",charProperties)
+        $gamePlayer.charProperties = charProperties
         return DMSG.call(this,n,p)
     }
 
     var DMlG = DataManager.loadGame
     DataManager.loadGame = function (n) {
         import_json("test.json", (j) => {
-            if (StorageManager.exists("char")){
-                StorageManager.loadObject("char").then((value) => {
-                    charProperties = value
-                    grad.grad_common.addLoadListener(grad_common_load)
-                })
+            if ($gamePlayer.charProperties){
+                charProperties = $gamePlayer.charProperties
+                grad.grad_common.addLoadListener(grad_common_load)
             } else {
                 charProperties = j
             }
