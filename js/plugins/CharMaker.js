@@ -271,7 +271,6 @@ function CharMaker() {
             let context = canvas.getContext("2d")
             context.clearRect(0,0,canvas.width,canvas.height)
             bit.addLoadListener(callbackClosure(item, function(item) {
-                console.log(item)
                 let canvas = document.getElementById(item+"c")
                 let context = canvas.getContext("2d")
                 context.drawImage(
@@ -457,13 +456,16 @@ function CharMaker() {
             }
             option_html += `<div class="column" style="width: 50%;">${col_option}</div></div>`
             html_glob += tabpanel.replace(/txt/g,info_tab[key].id+"option").replace(/content/g,option_html)
-            let color_html = `<div class="row" style="display: flex;">`
+            let color_html = `<div class="row" style="display: flex; margin: 0 auto;">`
             i = 0
             col_color = ""
             for (t in info_tab[key].color){
                 let value = info_tab[key].color[t]
                 if ("function" != typeof(value)) {
-                    col_color += color_button.replace(/opt/g,value).replace("cpt",charProperties.colors[value])
+                    console.log(value,t)
+                    let gradActual = grad[gradByType[value]]
+                    let backColor = gradActual.getPixel(gradActual.width/2,charProperties.colors[value]*4)
+                    col_color += '<div style="display: flex; margin: 0 auto; width: 100px;">' + color_button.replace(/opt/g,value).replace("cpt",charProperties.colors[value]) + `<div id="${value+"d"}" style="display: block; height: 48px; width: 70px; background-color: ${backColor}"></div></div>`
                     if (i%10==0 && i!= 0) {
                         color_html += `<div class="column" style="width: 50%;">${col_color}</div>`
                         col_color = ""
@@ -559,6 +561,7 @@ function CharMaker() {
                             n = Math.min(n+1,15)
                             charProperties.patterns[value] = "p"+String(n).padStart(2,'0')
                             document.getElementById(value).innerHTML = charProperties.patterns[value]
+
                             CharMaker.actualise()
                         }
                     })
@@ -573,6 +576,9 @@ function CharMaker() {
                             n = Math.max(n-1,0)
                             charProperties.colors[value] = n
                             document.getElementById(value+"c").innerHTML = String(n)
+                            let gradActual = grad[gradByType[value]]
+                            let backColor = gradActual.getPixel(gradActual.width/2,charProperties.colors[value]*4)
+                            document.getElementById(value+"d").style.backgroundColor = backColor
                             CharMaker.actualise()
                         }
                     })
@@ -582,6 +588,10 @@ function CharMaker() {
                             n = Math.min(n+1,30)
                             charProperties.colors[value] = n
                             document.getElementById(value+"c").innerHTML = String(n)
+                            let gradActual = grad[gradByType[value]]
+                            let backColor = gradActual.getPixel(gradActual.width/2,charProperties.colors[value]*4)
+                            console.log(value)
+                            document.getElementById(value+"d").style.backgroundColor = backColor
                             CharMaker.actualise()
                         }
                     })
