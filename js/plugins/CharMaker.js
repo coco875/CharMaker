@@ -158,8 +158,6 @@ function CharMaker() {
         }
     }
 
-    console.log(info_tab)
-
     fileGenerator = "js/plugins/generator/"
     var charProperties
     import_json("test.json", (j) => {
@@ -225,6 +223,15 @@ function CharMaker() {
     grad.grad_skin = ImageManager.loadBitmap(fileGenerator, "grad_skin")
 
     function grad_common_load(){
+        type = "TV"
+        var gender = ""
+        if (charProperties.gender == "male") {
+            gender = "Male"
+        } else {
+            gender = "Female"
+        }
+
+        image_path = fileGenerator+type+"/"+gender+"/";
         step = 0
         PlayerImage.character.clear()
         grad.grad_eyes.addLoadListener(grad_eyes_load)
@@ -243,43 +250,46 @@ function CharMaker() {
             if (!web) {
                 final_save(PlayerImage.character)
             }
+            bit = ImageManager.loadCharacter($gamePlayer._characterName)
+            bit.addLoadListener(function(){
+                bit.clearRect(0,0,actorWidth,actorHeight)
+                bit.blt(PlayerImage.character,0,0,PlayerImage.character.width,PlayerImage.character.height,0,0)
+            })
             cpcharProperties.colors = JSON.parse(JSON.stringify(charProperties.colors))
         } else {
             let item = order[step].toLowerCase().replace(/\d+/g, '')
             var filename = type+"_"+order[step]+"_"+charProperties.patterns[item]
-            if (item in charProperties.patterns){
-                file_exist(image_path+filename+".png",(t)=>{
-                    if (t) {
-                        var image = ImageManager.loadBitmap(image_path, filename);
-                        var mask = ImageManager.loadBitmap(image_path, filename+"_c");
-                        image.addLoadListener(function () {
-                            mask.addLoadListener(function () {
-                                if (!(filename in imageChar)) {
-                                    imageChar[filename] = new Bitmap(image.width,image.height)
+            file_exist(image_path+filename+".png",(t)=>{
+                if (t && item in charProperties.patterns) {
+                    var image = ImageManager.loadBitmap(image_path, filename);
+                    var mask = ImageManager.loadBitmap(image_path, filename+"_c");
+                    image.addLoadListener(function () {
+                        mask.addLoadListener(function () {
+                            if (!(filename in imageChar)) {
+                                imageChar[filename] = new Bitmap(image.width,image.height)
+                            }
+                            col = false
+                            for (var i in maskType[item]) {
+                                value = maskType[item][i]
+                                if (cpcharProperties.colors[value]!=charProperties.colors[value]) col = true
+                            }
+                            
+                            imageChar[filename].addLoadListener(function (){ 
+                                if (charProperties.patterns[item] != cpcharProperties.patterns[order[step]] || col) {
+                                    applyMask_grad(imageChar[filename],image,mask,item)
+                                    cpcharProperties.patterns[order[step]] = charProperties.patterns[item]
                                 }
-                                col = false
-                                for (var i in maskType[item]) {
-                                    value = maskType[item][i]
-                                    if (cpcharProperties.colors[value]!=charProperties.colors[value]) col = true
-                                }
-                                
-                                imageChar[filename].addLoadListener(function (){ 
-                                    if (charProperties.patterns[item] != cpcharProperties.patterns[order[step]] || col) {
-                                        applyMask_grad(imageChar[filename],image,mask,item)
-                                        cpcharProperties.patterns[order[step]] = charProperties.patterns[item]
-                                    }
-                                    PlayerImage.character.blt(imageChar[filename],0,0,imageChar[filename].width,imageChar[filename].height,0,0)
-                                    step+=1
-                                    grad_skin_load()
-                                })
+                                PlayerImage.character.blt(imageChar[filename],0,0,imageChar[filename].width,imageChar[filename].height,0,0)
+                                step+=1
+                                grad_skin_load()
                             })
                         })
-                    } else {
-                        step+=1
-                        grad_skin_load()
-                    }
-                })
-            } 
+                    })
+                } else {
+                    step+=1
+                    grad_skin_load()
+                }
+            })
         }
     }
 
@@ -312,8 +322,8 @@ function CharMaker() {
         fs.writeFileSync('img/characters/image.png', buf);
     }
 
-    var image_path
-    var type
+    var image_path = ""
+    var type = ""
 
     function distance_color(c1,c2){
         rgbc1 = hexToRgb(c1)
@@ -387,15 +397,6 @@ function CharMaker() {
     };
 
     CharMaker.prototype.createCharMaker = function(){
-        type = "TV"
-        var gender = ""
-        if (charProperties.gender == "male") {
-            gender = "Male"
-        } else {
-            gender = "Female"
-        }
-
-        image_path = fileGenerator+type+"/"+gender+"/";
         tab_html = ""
         tabpanel_html = ""
         for (var key in info_tab) {
@@ -439,7 +440,6 @@ function CharMaker() {
             for (t in info_tab[key].color){
                 let value = info_tab[key].color[t]
                 if ("function" != typeof(value)) {
-                    console.log(value)
                     col_color += color_button.replace(/opt/g,value).replace("cpt",charProperties.colors[value])
                     if (i%10==0 && i!= 0) {
                         color_html += `<div class="column" style="width: 50%;">${col_color}</div>`
@@ -449,7 +449,6 @@ function CharMaker() {
                 }
             }
             color_html += `<div class="column" style="width: 50%;">${col_color}</div></div>`
-            console.log(color_html)
             html_glob += tabpanel.replace(/txt/g,info_tab[key].id+"color").replace(/content/g,color_html)
             
             txt = txt.replace("option",html_glob)
@@ -543,7 +542,6 @@ function CharMaker() {
             for (t in info_tab[key].color) {
                 let value = info_tab[key].color[t]
                 if ("function" != typeof(value)) {
-                    console.log(value+"cL")
                     document.getElementById(value+"cL").addEventListener('click',function (){
                         if (step == order.length) {
                             n = Number(charProperties.colors[value])
@@ -584,7 +582,51 @@ function CharMaker() {
             bit.blt(PlayerImage.character,0,0,PlayerImage.character.width,PlayerImage.character.height,0,0)
         })
         clearInterval(a)
+    }
+
+    var DMSG = DataManager.saveGame
+    DataManager.saveGame = function (n,p) {
         StorageManager.saveObject("char",charProperties)
+        return DMSG.call(this,n,p)
+    }
+
+    var DMlG = DataManager.loadGame
+    DataManager.loadGame = function (n) {
+        import_json("test.json", (j) => {
+            if (StorageManager.exists("char")){
+                StorageManager.loadObject("char").then((value) => {
+                    charProperties = value
+                    grad.grad_common.addLoadListener(grad_common_load)
+                })
+            } else {
+                charProperties = j
+            }
+        });
+        return DMlG.call(this,n)
+    }
+
+    var GP = Game_Player.prototype.refresh
+    Game_Player.prototype.refresh = function (t) {
+        GP.call(this,t)
+        if (type!="") {
+            bit = ImageManager.loadCharacter($gamePlayer._characterName)
+            bit.addLoadListener(function(){
+                bit.clearRect(0,0,actorWidth,actorHeight)
+                bit.blt(PlayerImage.character,0,0,PlayerImage.character.width,PlayerImage.character.height,0,0)
+            })
+        }
+    }
+
+    var scene = SceneManager.pop
+    SceneManager.pop = function () {
+        scene.call(this)
+        if (type!="") {
+            bit = ImageManager.loadCharacter($gamePlayer._characterName)
+            bit.addLoadListener(function(){
+                bit.clearRect(0,0,actorWidth,actorHeight)
+                bit.blt(PlayerImage.character,0,0,PlayerImage.character.width,PlayerImage.character.height,0,0)
+            })
+        }
     }
 
     function callbackClosure(i, callback) {
@@ -596,7 +638,6 @@ function CharMaker() {
     function selView(n, dict) {
         i=0
         for (var key in dict) {
-            console.log(dict[key].id)
             if (i==n){
                 document.getElementById(dict[key].id).style.display = "inline"
                 document.getElementById(key).style.background = "#34373c"
