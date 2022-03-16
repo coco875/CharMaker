@@ -34,9 +34,8 @@ function CharMaker() {
         //SceneManager._scene._active = false
         SceneManager.goto(CharMaker);
     });
-
-    option = 'opt<br><i class="arrow left" id="optL">&#8592</i><div id="opt" style="display:inline;">vpt</div><i class="arrow right" id="optR">&#8594</i><br>'
-    color_button = `opt<br><i class="arrow left" id="optcL">&#8592</i><div id="optc" style="display:inline;">cpt</div><i class="arrow right" id="optcR">&#8594</i><br>`
+    option = '<div style="display: display: block; width: 100px;">opt<br><i class="arrow left" id="optL">&#8592</i><div id="opt" style="display:inline;">vpt</div><i class="arrow right" id="optR">&#8594</i></div>'
+    color_button = `<div style="display: display: block; width: 100px;">opt<br><i class="arrow left" id="optcL">&#8592</i><div id="optc" style="display:inline;">cpt</div><i class="arrow right" id="optcR">&#8594</i></div>`
 
     tab = `<li id="txt" style="
     display:inline-block;
@@ -259,6 +258,30 @@ function CharMaker() {
         } else {
             let item = order[step].toLowerCase().replace(/\d+/g, '')
             var filename = type+"_"+order[step]+"_"+charProperties.patterns[item]
+            
+            var gender = ""
+            if (charProperties.gender == "male") {
+                gender = "Male"
+            } else {
+                gender = "Female"
+            }
+            let icon_path = fileGenerator+"Variation/"+gender+"/";
+            let bit = ImageManager.loadBitmap(icon_path, `icon_${order[step].replace(/\d+/g, '')}_${charProperties.patterns[item]}`)
+            let canvas = document.getElementById(item+"c")
+            let context = canvas.getContext("2d")
+            context.clearRect(0,0,canvas.width,canvas.height)
+            bit.addLoadListener(callbackClosure(item, function(item) {
+                console.log(item)
+                let canvas = document.getElementById(item+"c")
+                let context = canvas.getContext("2d")
+                context.drawImage(
+                    bit.canvas, 
+                    0, 
+                    0, 
+                    bit.width,bit.height,
+                    0, 0, 
+                    canvas.height, canvas.height)
+            }))
             file_exist(image_path+filename+".png",(t)=>{
                 if (t && item in charProperties.patterns) {
                     var image = ImageManager.loadBitmap(image_path, filename);
@@ -406,7 +429,7 @@ function CharMaker() {
             tab_html += tab.replace(/txt/g,key)
             let txt = tabpanel.replace(/txt/g,info_tab[key].id).replace(/content/g,info_tab[key].content)
             let html_glob = ""
-            let option_html = `<div class="row" style="display: flex;">`
+            let option_html = `<div class="row" style="display: flex; margin: 0 auto;">`
             let button = ``
             button += tab.replace(/txt/g,"Option")
             button += tab.replace(/txt/g,"Color")
@@ -424,7 +447,7 @@ function CharMaker() {
             for (t in info_tab[key].option){
                 let value = info_tab[key].option[t]
                 if ("function" != typeof(value)) {
-                    col_option += option.replace(/opt/g,value).replace("vpt",charProperties.patterns[value])
+                    col_option += '<div style="display: flex; margin: 0 auto; width: 100px;">' + option.replace(/opt/g,value).replace("vpt",charProperties.patterns[value]) + `<canvas id="${value+"c"}" style="display: block;" width=100 height=48></div>`
                     if (i%10==0 && i!= 0) {
                         option_html += `<div class="column" style="width: 50%;">${col_option}</div>`
                         col_option = ""
@@ -466,7 +489,7 @@ function CharMaker() {
             margin:0;
             padding:0;
             transform: translate(-50%, 0);
-            font-size: 80%; 
+            font-size: 14px; 
             font-family:Comic Sans MS, Comic Sans, cursive;
         "
         >
