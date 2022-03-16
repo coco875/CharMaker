@@ -466,7 +466,7 @@ function CharMaker() {
             margin:0;
             padding:0;
             transform: translate(-50%, 0);
-            font-size: large; 
+            font-size: 100%; 
             font-family:Comic Sans MS, Comic Sans, cursive;
         "
         >
