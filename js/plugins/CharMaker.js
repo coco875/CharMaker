@@ -266,21 +266,26 @@ function CharMaker() {
                 gender = "Female"
             }
             let icon_path = fileGenerator+"Variation/"+gender+"/";
-            let bit = ImageManager.loadBitmap(icon_path, `icon_${order[step].replace(/\d+/g, '')}_${charProperties.patterns[item]}`)
-            let canvas = document.getElementById(item+"c")
-            let context = canvas.getContext("2d")
-            context.clearRect(0,0,canvas.width,canvas.height)
-            bit.addLoadListener(callbackClosure(item, function(item) {
+            file_exist(icon_path+`icon_${order[step].replace(/\d+/g, '')}_${charProperties.patterns[item]}`,(t)=> {
+                if (!t) {
+                    return;
+                }
+                let bit = ImageManager.loadBitmap(icon_path, `icon_${order[step].replace(/\d+/g, '')}_${charProperties.patterns[item]}`)
                 let canvas = document.getElementById(item+"c")
                 let context = canvas.getContext("2d")
-                context.drawImage(
-                    bit.canvas, 
-                    0, 
-                    0, 
-                    bit.width,bit.height,
-                    0, 0, 
-                    canvas.height, canvas.height)
-            }))
+                context.clearRect(0,0,canvas.width,canvas.height)
+                bit.addLoadListener(callbackClosure(item, function(item) {
+                    let canvas = document.getElementById(item+"c")
+                    let context = canvas.getContext("2d")
+                    context.drawImage(
+                        bit.canvas, 
+                        0, 
+                        0, 
+                        bit.width,bit.height,
+                        0, 0, 
+                        canvas.height, canvas.height)
+                }))
+            })
             file_exist(image_path+filename+".png",(t)=>{
                 if (t && item in charProperties.patterns) {
                     var image = ImageManager.loadBitmap(image_path, filename);
