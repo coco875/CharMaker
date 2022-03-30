@@ -1,5 +1,8 @@
 {
     "gender":"male",
+    "name":"default",
+    "url":"",
+    "id":0,
     "patterns":{
         "body":"p01",
         "face":"p01",

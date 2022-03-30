@@ -160,14 +160,17 @@ function CharMaker() {
     fileGenerator = "js/plugins/generator/"
     var charProperties
     import_json("test.json", (j) => {
-        if (StorageManager.exists("char")){
-            StorageManager.loadObject("char").then((value) => {
-                charProperties = value
+        if (StorageManager.exists("CharMaker")){
+            StorageManager.loadObject("CharMaker").then((value) => {
+                listCharProperties = value
+                charProperties = listCharProperties[0]
             })
         } else {
+            listCharProperties = [j]
             charProperties = j
         }
     });
+
     var cpcharProperties = {patterns:{},colors:{}}
     var maskColor
     var order
@@ -255,6 +258,8 @@ function CharMaker() {
                 bit.blt(PlayerImage.character,0,0,PlayerImage.character.width,PlayerImage.character.height,0,0)
             })
             cpcharProperties.colors = JSON.parse(JSON.stringify(charProperties.colors))
+            listCharProperties[charProperties.id] = charProperties
+            charProperties.url = PlayerImage.character.canvas.toDataURL()
         } else {
             let item = order[step].toLowerCase().replace(/\d+/g, '')
             var filename = type+"_"+order[step]+"_"+charProperties.patterns[item]
@@ -266,7 +271,7 @@ function CharMaker() {
                 gender = "Female"
             }
             let icon_path = fileGenerator+"Variation/"+gender+"/";
-            file_exist(icon_path+`icon_${order[step].replace(/\d+/g, '')}_${charProperties.patterns[item]}`,(t)=> {
+            file_exist(icon_path+`icon_${order[step].replace(/\d+/g, '')}_${charProperties.patterns[item]}.png`,(t)=> {
                 if (!t) {
                     return;
                 }
@@ -616,30 +621,55 @@ function CharMaker() {
         document.getElementById("CharMaker").style.display = "none"
         // $gameActors.actor(1).setCharacterImage("image",0);
         // $gamePlayer.refresh();
-        bit = ImageManager.loadCharacter($gamePlayer._characterName)
-        bit.addLoadListener(function(){
-            bit.clearRect(0,0,actorWidth,actorHeight)
-            bit.blt(PlayerImage.character,0,0,PlayerImage.character.width,PlayerImage.character.height,0,0)
-        })
+        $gamePlayer._characterName = charProperties.name
+        ImageManager._cache["img/characters/"+charProperties.name+".png"] = Bitmap.load(charProperties.url)
         clearInterval(a)
+    }
+    
+    WSfLdI = Window_SavefileList.prototype.drawItem
+    Window_SavefileList.prototype.drawItem = function(index) {
+        if (listCharProperties[index]) {
+            ImageManager._cache["img/characters/"+`file${index}`+".png"] = Bitmap.load(listCharProperties[index].url)
+        }
+        WSfLdI.call(this,index)
+    }
+
+    DMlGI = DataManager.loadGlobalInfo
+    DataManager.loadGlobalInfo = function() {
+        DMlGI.call(this);
+        if (StorageManager.exists("CharMaker")){
+            StorageManager.loadObject("CharMaker").then((value) => {
+                for (let i in value){
+                    if (typeof(value[i]) != "function"){
+                        DataManager._globalInfo[i].characters[0][0] = `file${i}`
+                        console.log(listCharProperties[i])
+                        ImageManager._cache["img/characters/"+`file${i}`+".png"] = Bitmap.load(listCharProperties[i].url)
+                    }
+                }
+            })
+        }
     }
 
     var DMSG = DataManager.saveGame
     DataManager.saveGame = function (n,p) {
-        $gamePlayer.charProperties = charProperties
+        charProperties.id = n
+        charProperties.name = `file${n}`
+        listCharProperties[n] = charProperties
+        StorageManager.saveObject("CharMaker", listCharProperties)
+        console.log(n,p)
+        $gamePlayer._characterName = charProperties.name
+        ImageManager._cache["img/characters/"+charProperties.name+".png"] = Bitmap.load(charProperties.url)
         return DMSG.call(this,n,p)
     }
 
     var DMlG = DataManager.loadGame
     DataManager.loadGame = function (n) {
-        import_json("test.json", (j) => {
-            if ($gamePlayer.charProperties){
-                charProperties = $gamePlayer.charProperties
-                grad.grad_common.addLoadListener(grad_common_load)
-            } else {
-                charProperties = j
-            }
-        });
+        charProperties = listCharProperties[n]
+        console.log(n,charProperties)
+        $gamePlayer._characterName = charProperties.name
+        ImageManager._cache["img/characters/"+charProperties.name+".png"] = Bitmap.load(charProperties.url)
+        console.log(charProperties, listCharProperties)
+        DataManager._globalInfo[n].characters[0][0] = `file${n}`
         return DMlG.call(this,n)
     }
 
@@ -647,11 +677,8 @@ function CharMaker() {
     Game_Player.prototype.refresh = function (t) {
         GP.call(this,t)
         if (type!="") {
-            bit = ImageManager.loadCharacter($gamePlayer._characterName)
-            bit.addLoadListener(function(){
-                bit.clearRect(0,0,actorWidth,actorHeight)
-                bit.blt(PlayerImage.character,0,0,PlayerImage.character.width,PlayerImage.character.height,0,0)
-            })
+            $gamePlayer._characterName = charProperties.name
+            ImageManager._cache["img/characters/"+charProperties.name+".png"] = Bitmap.load(charProperties.url)
         }
     }
 
@@ -659,11 +686,8 @@ function CharMaker() {
     SceneManager.pop = function () {
         scene.call(this)
         if (type!="") {
-            bit = ImageManager.loadCharacter($gamePlayer._characterName)
-            bit.addLoadListener(function(){
-                bit.clearRect(0,0,actorWidth,actorHeight)
-                bit.blt(PlayerImage.character,0,0,PlayerImage.character.width,PlayerImage.character.height,0,0)
-            })
+            $gamePlayer._characterName = charProperties.name
+            ImageManager._cache["img/characters/"+charProperties.name+".png"] = Bitmap.load(charProperties.url)
         }
     }
 
